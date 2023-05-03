@@ -1,127 +1,118 @@
 import './style.scss';
 import { sound, soundData } from "./sound";
 
-// class Item {
-//   element: sound
-//   li: Node
-//   input: HTMLInputElement
-//   label: HTMLLabelElement
-//   img: HTMLImageElement
-//   audio: HTMLAudioElement
-//   checked: boolean
-//   activ: string
+const defaultChecked: number = Math.round((soundData.length - 1) / 2);
 
-//   constructor(element: sound, activ: string) {
-//     this.element = element;
-//     this.activ = activ;
+class SoundItem {
+  element: sound
+  li: HTMLLIElement
+  input: HTMLInputElement
+  label: HTMLLabelElement
+  img: HTMLImageElement
+  svg: HTMLImageElement
+  audio: HTMLAudioElement
+  imgBackground: HTMLImageElement
+  defaultChecked: boolean
+  wrapper: Node
 
-//     this.li = document.createElement("li");
-//     this.checked = false;
+  constructor(element: sound, audio: HTMLAudioElement, imgBackground: HTMLImageElement, defaultChecked: boolean, wrapper: Node) {
+    this.element = element;
+    this.defaultChecked = defaultChecked;
+    this.audio = audio;
+    this.imgBackground = imgBackground;
+    this.wrapper = wrapper;
 
-//     this.input = document.createElement("input");
-//     this.input.setAttribute("type", "radio");
-//     this.input.setAttribute("id", element.label);
-//     this.input.setAttribute("name", "sound");
-//     this.input.addEventListener("click", (e: Event) => {
-//       // const { target } = e;
-//       // if ((target as HTMLInputElement).checked) {
-//       //   this.audio.paused === true
-//       //     ? this.play()
-//       //     : this.pause()
-//       // } else {
-//       //   this.stop();
-//       // }
-//       this.activ = 
-//     });
+    this.li = document.createElement("li");
+    this.li.setAttribute("class", "item");
 
-//     this.label = document.createElement("label");
-//     this.label.setAttribute("for", element.label);
+    this.input = document.createElement("input");
+    this.input.setAttribute("class", "input");
+    this.input.setAttribute("type", "radio");
+    this.input.setAttribute("id", element.label);
+    this.input.setAttribute("name", "sound");
+    this.input.addEventListener("click", () => {
+      this.audio.paused === true
+        ? this.play()
+        : this.pause()
+    });
+    this.input.addEventListener("change", () => {
+      this.audio.setAttribute("src", element.sound);
+      this.play();
 
-//     this.img = document.createElement("img");
-//     this.img.setAttribute("src", element.img);
-//     this.img.setAttribute("alt", element.label);
-//     this.img.setAttribute("class", "img--mini");
-//     this.label.appendChild(this.img);
+      this.imgBackground.setAttribute("src", element.img);
+    });
 
-//     this.audio = document.createElement("audio");
-//     this.audio.setAttribute("src", element.sound);
+    this.label = document.createElement("label");
+    this.label.setAttribute("for", element.label);
+    this.label.setAttribute("class", "label");
 
-//     this.li.appendChild(this.input);
-//     this.li.appendChild(this.label);
-//     this.li.appendChild(this.audio);
-//   }
+    this.img = document.createElement("img");
+    this.img.setAttribute("class", "img--mini");
+    this.img.setAttribute("src", element.img);
+    this.img.setAttribute("alt", element.label);
+    this.label.appendChild(this.img);
 
-//   play(): void {
-//     this.audio.play();
-//   }
+    this.svg = document.createElement("img");
+    this.svg.setAttribute("class", "img--svg");
+    this.svg.setAttribute("src", element.svg);
+    this.svg.setAttribute("alt", element.label);
+    this.label.appendChild(this.svg);
 
-//   pause(): void {
-//     this.audio.pause();
-//   }
+    if (defaultChecked) {
+      this.audio.setAttribute("src", element.sound);
+      this.imgBackground.setAttribute("src", element.img);
+      this.input.setAttribute("checked", "checked");
+    }
 
-//   stop(): void {
-//     this.audio.pause();
-//     this.audio.currentTime = 0;
-//   }
+    this.li.appendChild(this.input);
+    this.li.appendChild(this.label);
+  }
 
-//   render(): void {
-//     document.querySelector<HTMLDivElement>('#app ul')!.appendChild(this.li)
-//   }
-// }
+  play(): void {
+    this.audio.play();
+  }
 
-// document.querySelector<HTMLDivElement>('#app')!.appendChild(
-//   document.createElement("ul")
-// )
-// const test1 = new Item(soundData[0]);
-// test1.render()
-// const test2 = new Item(soundData[1]);
-// test2.render()
+  pause(): void {
+    this.audio.pause();
+  }
 
+  stop(): void {
+    this.audio.pause();
+    this.audio.currentTime = 0;
+  }
 
-const soundHTML: string = soundData
-  .map((it: sound) => (`
-    <li>
-      <input type="radio" id="${it.label}" name="sound">
-      <label for="${it.label}">
-        <img class="img--mini" src="${it.img}" alt="${it.label}">
-      </label>
-      <audio
-        controls
-        src="${it.sound}"
-      >
-      </audio>
-    </li>
-  `))
-  .join(' ');
+  render(): void {
+    this.wrapper.appendChild(this.li)
+  }
+}
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
- <div class="wrapper">
-    <img class="img--background" src="" alt="background">
-    <ul>
-      ${soundHTML}
-    </ul>
- </div>
- `;
+const img: HTMLImageElement = document.createElement("img");
+img.setAttribute("class", "img--background");
+img.setAttribute("alt", "background");
 
-const audios: NodeListOf<HTMLAudioElement> = document.querySelectorAll("audio");
-const checkbox: NodeListOf<HTMLInputElement> = document.querySelectorAll("input");
-const backgroundImage: HTMLImageElement = document.querySelector(".img--background")!;
+const audio: HTMLAudioElement = document.createElement("audio");
+const ul: HTMLUListElement = document.createElement("ul");
+ul.setAttribute("class", "list");
+const app: HTMLDivElement = document.querySelector<HTMLDivElement>('#app')!;
 
-checkbox.forEach((it: HTMLInputElement, i: number) => {
-  it.addEventListener("click", () => {
-    audios[i].paused ? audios[i].play() : audios[i].pause();
-    backgroundImage.src = soundData[i].img;
-
-  })
-  it.addEventListener("change", () => {
-    audios.forEach(audio => {
-      audio.pause();
-      audio.currentTime = 0;
-    })
-    audios[i].play();
-
-  })
+const range: HTMLInputElement = document.createElement("input");
+range.setAttribute("class", "range");
+range.setAttribute("type", "range");
+range.setAttribute("min", "0");
+range.setAttribute("max", "100");
+range.setAttribute("value", "70");
+audio.volume = range.valueAsNumber / 100;
+range.addEventListener("change", (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  if (target) audio.volume = target.valueAsNumber / 100;
 })
 
-console.log(audios)
-console.log(checkbox)
+app.appendChild(img);
+app.appendChild(audio);
+app.appendChild(ul);
+app.appendChild(range);
+
+soundData.forEach((it, i: number) => {
+  const item = new SoundItem(it, audio, img, defaultChecked === i, ul);
+  item.render();
+})
